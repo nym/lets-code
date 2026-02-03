@@ -79,9 +79,9 @@ _check-e2e-port:
 psql:
     psql "$DATABASE_URL"
 
-# Create a new migration file
+# Generate migration files from Typescript definitions
 [group('db')]
-db-migration *args:
+db-generate *args:
     drizzle-kit generate --config drizzle.config.ts {{ args }}
 
 # Apply pending migrations

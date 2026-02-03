@@ -60,34 +60,34 @@ just --list
 #+begin_example
 Available recipes:
     [build]
-    build              # Build the app
-    docker-build       # Build a container image via Docker
-    docker-run *args   # Run a container image via Docker
+    build             # Build the app
+    docker-build      # Build a container image via Docker
+    docker-run *args  # Run a container image via Docker
 
     [db]
-    db-migrate *args   # Apply pending migrations
-    db-migration *args # Create a new migration file
-    db-reset           # Remove project PostgreSQL state
-    psql               # Start an interactive psql session
+    db-generate *args # Generate migration files from Typescript definitions
+    db-migrate *args  # Apply pending migrations
+    db-reset          # Remove project PostgreSQL state
+    psql              # Start an interactive psql session
 
     [dev]
-    dev                # Start development environment using Docker Compose
-    fmt                # Format project source files
-    lint               # Lint project source files
-    serve              # Run the node server
-    setup              # Prepare local development environment
-    storybook          # Start Storybook
-    storybook-build    # Build Storybook
+    dev               # Start development environment using Docker Compose
+    fmt               # Format project source files
+    lint              # Lint project source files
+    serve             # Run the node server
+    setup             # Prepare local development environment
+    storybook         # Start Storybook
+    storybook-build   # Build Storybook
 
     [docker]
-    docker *args       # Run docker compose commands
+    docker *args      # Run docker compose commands
 
     [release]
-    check              # Type check source files
-    start              # Start the app in production mode
+    check             # Type check source files
+    start             # Start the app in production mode
 
     [test]
-    test               # Run project test suite
+    test              # Run project test suite
 #+end_example
 
 * Tasks
