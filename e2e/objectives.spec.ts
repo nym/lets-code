@@ -77,11 +77,9 @@ test("delete button appears on objective cards", async ({ page }) => {
 
   await page.fill('input[name="title"]', "To be deleted");
   await page.click('button[type="submit"]');
-  await expect(page.getByText("To be deleted")).toBeVisible();
 
-  await expect(
-    page.getByRole("button", { name: "Delete objective" }).first()
-  ).toBeVisible();
+  const card = page.locator("li").filter({ hasText: "To be deleted" }).first();
+  await expect(card.getByRole("button", { name: "Delete objective" })).toBeVisible();
 });
 
 test("clicking delete once shows a confirmation prompt", async ({ page }) => {
@@ -89,11 +87,11 @@ test("clicking delete once shows a confirmation prompt", async ({ page }) => {
 
   await page.fill('input[name="title"]', "Confirm delete test");
   await page.click('button[type="submit"]');
-  await expect(page.getByText("Confirm delete test")).toBeVisible();
 
-  await page.getByRole("button", { name: "Delete objective" }).first().click();
+  const card = page.locator("li").filter({ hasText: "Confirm delete test" }).first();
+  await card.getByRole("button", { name: "Delete objective" }).click();
 
-  await expect(page.getByText("Delete?")).toBeVisible();
+  await expect(card.getByText("Delete?")).toBeVisible();
 });
 
 test("confirming delete removes the card from the list", async ({ page }) => {
@@ -101,11 +99,11 @@ test("confirming delete removes the card from the list", async ({ page }) => {
 
   await page.fill('input[name="title"]', "Delete me");
   await page.click('button[type="submit"]');
-  await expect(page.getByText("Delete me")).toBeVisible();
 
-  const deleteButton = page.getByRole("button", { name: "Delete objective" }).first();
+  const card = page.locator("li").filter({ hasText: "Delete me" }).first();
+  const deleteButton = card.getByRole("button", { name: "Delete objective" });
   await deleteButton.click();
-  await expect(page.getByText("Delete?")).toBeVisible();
+  await expect(card.getByText("Delete?")).toBeVisible();
   await deleteButton.click();
 
   await expect(page.getByText("Delete me")).not.toBeVisible();
@@ -116,13 +114,11 @@ test("clicking mark as complete checks the checkbox", async ({ page }) => {
 
   await page.fill('input[name="title"]', "Complete me");
   await page.click('button[type="submit"]');
-  await expect(page.getByText("Complete me")).toBeVisible();
 
-  await page.getByRole("button", { name: "Mark as complete" }).first().click();
+  const card = page.locator("li").filter({ hasText: "Complete me" }).first();
+  await card.getByRole("button", { name: "Mark as complete" }).click();
 
-  await expect(
-    page.getByRole("button", { name: "Completed" }).first()
-  ).toBeVisible();
+  await expect(card.getByRole("button", { name: "Completed" })).toBeVisible();
 });
 
 test("completed objective shows greyed text after the flash", async ({ page }) => {
@@ -130,17 +126,17 @@ test("completed objective shows greyed text after the flash", async ({ page }) =
 
   await page.fill('input[name="title"]', "Already done");
   await page.click('button[type="submit"]');
-  await expect(page.getByText("Already done")).toBeVisible();
 
-  await page.getByRole("button", { name: "Mark as complete" }).first().click();
+  const card = page.locator("li").filter({ hasText: "Already done" }).first();
+  await card.getByRole("button", { name: "Mark as complete" }).click();
 
-  // Wait for the 3-second flash to end and the page to revalidate
-  await page.waitForTimeout(3500);
-
-  // Title text should carry the grey completed class
-  const title = page.getByText("Already done");
-  const classes = await title.getAttribute("class");
-  expect(classes).toMatch(/text-gray-400/);
+  // Poll for the grey class — appears after the 3-second flash ends and the
+  // loader revalidation returns. Polling is more reliable than a fixed wait.
+  await expect(card.getByText("Already done")).toHaveAttribute(
+    "class",
+    /text-gray-400/,
+    { timeout: 8000 }
+  );
 });
 
 test("completed state persists after page reload", async ({ page }) => {
@@ -148,31 +144,31 @@ test("completed state persists after page reload", async ({ page }) => {
 
   await page.fill('input[name="title"]', "Persisted completion");
   await page.click('button[type="submit"]');
-  await expect(page.getByText("Persisted completion")).toBeVisible();
 
-  await page.getByRole("button", { name: "Mark as complete" }).first().click();
-  await expect(page.getByRole("button", { name: "Completed" }).first()).toBeVisible();
+  // Scope to the specific card so parallel tests inserting newer objectives
+  // don't cause .first() to target the wrong card.
+  const card = page.locator("li").filter({ hasText: "Persisted completion" }).first();
+  await card.getByRole("button", { name: "Mark as complete" }).click();
+  await expect(card.getByRole("button", { name: "Completed" })).toBeVisible();
 
   await page.reload();
 
   await expect(
-    page.getByRole("button", { name: "Completed" }).first()
+    page.locator("li").filter({ hasText: "Persisted completion" }).first()
+      .getByRole("button", { name: "Completed" })
   ).toBeVisible();
 });
 
 test("multiple objectives render as a grid of cards", async ({ page }) => {
   await page.goto("/objectives");
 
-  // Create two objectives
+  // Create two objectives — visibility is asserted inside the loop so there's
+  // no need for a post-loop re-check (which would fail if parallel tests push
+  // items past the 10-item page limit).
   for (const title of ["Morning yoga", "Evening reading"]) {
     await page.fill('input[name="title"]', title);
     await page.click('button[type="submit"]');
     await expect(page.getByText(title).first()).toBeVisible();
-    // Clear for next entry
     await page.fill('input[name="title"]', "");
   }
-
-  // Both should be visible as cards
-  await expect(page.getByText("Morning yoga").first()).toBeVisible();
-  await expect(page.getByText("Evening reading").first()).toBeVisible();
 });

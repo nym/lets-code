@@ -49,7 +49,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </div>
 
         <Link
-          to="/objectives"
+          to="/objectives/"
           className="inline-block px-8 py-3 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold text-sm hover:bg-gray-700 dark:hover:bg-gray-100 transition-colors"
         >
           {t("home.viewDemo")}
