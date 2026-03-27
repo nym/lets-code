@@ -10,8 +10,8 @@ function getCSP(response: APIResponse) {
 
 test("GET /", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("Iconic Shift");
-  await expect(page.locator("text=PostgreSQL connected")).toBeVisible();
+  await expect(page.locator("h1")).toHaveText("Objective Swift");
+  await expect(page.getByRole("link", { name: "View Demo" })).toBeVisible();
 });
 
 test.describe("Security headers", () => {
